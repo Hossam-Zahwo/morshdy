@@ -1,99 +1,98 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState } from "react";
+
+
 
 const Zahraa = () => {
-  const [area, setArea] = useState<string>('');
-  const [pricePerMeter, setPricePerMeter] = useState<string>('');
-  const [zone, setZone] = useState<string>('');
-  const [quarterlyData, setQuarterlyData] = useState<any>(null);
-  const [monthlyData, setMonthlyData] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [area, setArea] = useState("");
+  const [pricePerMeter, setPricePerMeter] = useState("");
+  const [zone, setZone] = useState("");
+  const [quarterlyData, setQuarterlyData] = useState<{
+    totalPrice: number;
+    adjustedTotalPrice: number;
+    contractPayment: number;
+    quarterlyInstallment: number;
+    maintenance: number;
+  } | null>(null);
 
-  const zones = ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4'];
+  const [monthlyData, setMonthlyData] = useState<{
+    totalPrice: number;
+    adjustedTotalPrice: number;
+    contractPayment: number;
+    monthlyInstallment: number;
+    yearlyInstallment: number;
+    maintenance: number;
+  } | null>(null);
+
+  const [loading, setLoading] = useState(false);
+
+  const zones = ["Zone 1", "Zone 2", "Zone 3", "Zone 4"];
 
   const calculate = () => {
+    // التحقق من المدخلات
     if (!area || !pricePerMeter || !zone) {
-      alert('يرجى ملء جميع الحقول');
+      alert("يرجى ملء جميع الحقول");
       return;
     }
 
-    const areaNum = parseFloat(area);
-    const pricePerMeterNum = parseFloat(pricePerMeter);
+    const areaNum = parseFloat(area.trim());
+    const pricePerMeterNum = parseFloat(pricePerMeter.trim());
 
     if (isNaN(areaNum) || isNaN(pricePerMeterNum)) {
-      alert('يرجى إدخال قيم صحيحة');
+      alert("يرجى إدخال قيم صحيحة");
       return;
     }
 
     setLoading(true);
 
+    // حساب الإجمالي بعد الخصم
     const totalPrice = areaNum * pricePerMeterNum;
-    const discount = totalPrice * 0.05;  // 5% discount
+    const discount = 1000000; // ثابت
     const adjustedTotalPrice = totalPrice - discount;
-    const contractPayment = totalPrice * 0.07;  // 7% contract payment
+    const contractPayment = 1000000; // ثابت
 
-    // Quarterly Data
-    const quarterlyInstallment = (adjustedTotalPrice - contractPayment - (adjustedTotalPrice * 0.2)) / 28;  // 28 quarterly installments
-    const halfTimePayment = adjustedTotalPrice * 0.2;  // Payment after 2.5 years
-    const maintenance = adjustedTotalPrice * 0.1;  // 10% maintenance fee
+    // حساب الأقساط الربع سنوية
+    const quarterlyInstallment = (adjustedTotalPrice - contractPayment) / 28;
+    const maintenance = adjustedTotalPrice * 0.1; // 10% من الإجمالي بعد الخصم
 
-    const quarterlyData = {
-      totalPrice: adjustedTotalPrice,
+    // بيانات الأقساط الربع سنوية
+    setQuarterlyData({
+      totalPrice,
+      adjustedTotalPrice,
       contractPayment,
       quarterlyInstallment,
-      halfTimePayment,
-      discount,
       maintenance,
-    };
+    });
 
-    // Monthly Data
-    const monthlyInstallment = (adjustedTotalPrice - contractPayment - (adjustedTotalPrice * 0.2)) / 82;  // 82 monthly installments
-    const yearlyInstallment = adjustedTotalPrice * 0.05;  // 5% yearly installment
-    const finalPayment = adjustedTotalPrice * 0.2;  // Payment upon receipt
+    // حساب الأقساط الشهرية
+    const monthlyInstallment = (adjustedTotalPrice - contractPayment) / 82;
+    const yearlyInstallment = adjustedTotalPrice / 7;
 
-    const monthlyData = {
-      totalPrice: adjustedTotalPrice,
+    // بيانات الأقساط الشهرية
+    setMonthlyData({
+      totalPrice,
+      adjustedTotalPrice,
       contractPayment,
-      yearlyInstallment,
       monthlyInstallment,
-      finalPayment,
-      discount,
+      yearlyInstallment,
       maintenance,
-    };
+    });
 
-    setQuarterlyData(quarterlyData);
-    setMonthlyData(monthlyData);
     setLoading(false);
   };
 
   return (
-    <div style={{ textAlign: 'center', direction: 'rtl', fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ textAlign: "center", direction: "rtl", fontFamily: "Arial, sans-serif" }}>
       <h1>حساب تكلفة Zahraa</h1>
 
       <label>المساحة (م²): </label>
-      <input
-        type="number"
-        value={area}
-        className="m-2 text-black"
-        onChange={(e) => setArea(e.target.value)}
-        placeholder="أدخل المساحة"
-      />
+      <input type="number" value={area} onChange={(e) => setArea(e.target.value)} placeholder="أدخل المساحة" />
 
       <label>سعر المتر: </label>
-      <input
-        type="number"
-        value={pricePerMeter}
-        className="m-2 text-black"
-        onChange={(e) => setPricePerMeter(e.target.value)}
-        placeholder="أدخل سعر المتر"
-      />
+      <input type="number" value={pricePerMeter} onChange={(e) => setPricePerMeter(e.target.value)} placeholder="أدخل سعر المتر" />
 
       <label>اختر المنطقة: </label>
-      <select
-        value={zone}
-        onChange={(e) => setZone(e.target.value)}
-        className="m-2 text-black"
-      >
+      <select value={zone} onChange={(e) => setZone(e.target.value)}>
         <option value="">اختر المنطقة</option>
         {zones.map((zoneOption, index) => (
           <option key={index} value={zoneOption}>
@@ -102,72 +101,69 @@ const Zahraa = () => {
         ))}
       </select>
 
-      <button onClick={calculate} disabled={loading}>احسب</button>
+      <button onClick={calculate} disabled={loading}>
+        احسب
+      </button>
       {loading && <div>جاري الحساب...</div>}
 
       <h2>النتائج</h2>
 
-      {/* Quarterly Data */}
       {quarterlyData && (
-        <table style={{ width: '80%', margin: 'auto', borderCollapse: 'collapse' }}>
+        <table className="w-full mx-auto my-3 overflow-x-auto border-collapse">
           <thead>
             <tr>
-              <th>مدة التقسيط</th>
-              <th>الإجمالي</th>
-              <th>الإجمالي بعد الخصم</th>
-              <th>دفعة التعاقد</th>
-              <th>أقساط ربع سنوية بعد الخصم</th>
-              <th>دفعة بعد سنتين ونصف</th>
-              <th>الصيانة</th>
+              <th className="p-3 border border-gray-200">مدة التقسيط</th>
+              <th className="p-3 border border-gray-200">الإجمالي</th>
+              <th className="p-3 border border-gray-200">الإجمالي بعد الخصم</th>
+              <th className="p-3 border border-gray-200">دفعة التعاقد</th>
+              <th className="p-3 border border-gray-200">أقساط ربع سنوية</th>
+              <th className="p-3 border border-gray-200">الصيانة</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>8 سنوات</td>
-              <td>{quarterlyData.totalPrice.toLocaleString()}</td>
-              <td>{(quarterlyData.totalPrice - quarterlyData.discount).toLocaleString()}</td>
-              <td>{quarterlyData.contractPayment.toLocaleString()}</td>
-              <td>{quarterlyData.quarterlyInstallment.toLocaleString()}</td>
-              <td>{quarterlyData.halfTimePayment.toLocaleString()}</td>
-              <td>{quarterlyData.maintenance.toLocaleString()}</td>
+              <td className="p-3 border border-gray-200">7 سنوات</td>
+              <td className="p-3 border border-gray-200">{quarterlyData.totalPrice.toLocaleString()}</td>
+              <td className="p-3 border border-gray-200">{quarterlyData.adjustedTotalPrice.toLocaleString()}</td>
+              <td className="p-3 border border-gray-200">{quarterlyData.contractPayment.toLocaleString()}</td>
+              <td className="p-3 border border-gray-200">{quarterlyData.quarterlyInstallment.toLocaleString()}</td>
+              <td className="p-3 border border-gray-200">{quarterlyData.maintenance.toLocaleString()}</td>
             </tr>
           </tbody>
         </table>
       )}
 
-      {/* Monthly Data */}
       {monthlyData && (
-        <table style={{ width: '80%', margin: 'auto', borderCollapse: 'collapse' }}>
+        <table className="w-full mx-auto my-3 overflow-x-auto border-collapse">
           <thead>
             <tr>
-              <th>مدة التقسيط</th>
-              <th>الإجمالي</th>
-              <th>الإجمالي بعد الخصم</th>
-              <th>دفعة التعاقد</th>
-              <th>أقساط شهرية بعد الخصم</th>
-              <th>أقساط سنوية</th>
-              <th>دفعة الاستلام</th>
-              <th>الصيانة</th>
+              <th className="p-3 border border-gray-200">مدة التقسيط</th>
+              <th className="p-3 border border-gray-200">الإجمالي</th>
+              <th className="p-3 border border-gray-200">الإجمالي بعد الخصم</th>
+              <th className="p-3 border border-gray-200">دفعة التعاقد</th>
+              <th className="p-3 border border-gray-200">أقساط شهرية</th>
+              <th className="p-3 border border-gray-200">أقساط سنوية</th>
+              <th className="p-3 border border-gray-200">الصيانة</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>8 سنوات</td>
-              <td>{monthlyData.totalPrice.toLocaleString()}</td>
-              <td>{(monthlyData.totalPrice - monthlyData.discount).toLocaleString()}</td>
-              <td>{monthlyData.contractPayment.toLocaleString()}</td>
-              <td>{monthlyData.monthlyInstallment.toLocaleString()}</td>
-              <td>{monthlyData.yearlyInstallment.toLocaleString()}</td>
-              <td>{monthlyData.finalPayment.toLocaleString()}</td>
-              <td>{monthlyData.maintenance.toLocaleString()}</td>
+              <td className="p-3 border border-gray-200">7 سنوات</td>
+              <td className="p-3 border border-gray-200">{monthlyData.totalPrice.toLocaleString()}</td>
+              <td className="p-3 border border-gray-200">{monthlyData.adjustedTotalPrice.toLocaleString()}</td>
+              <td className="p-3 border border-gray-200">{monthlyData.contractPayment.toLocaleString()}</td>
+              <td className="p-3 border border-gray-200">{monthlyData.monthlyInstallment.toLocaleString()}</td>
+              <td className="p-3 border border-gray-200">{monthlyData.yearlyInstallment.toLocaleString()}</td>
+              <td className="p-3 border border-gray-200">{monthlyData.maintenance.toLocaleString()}</td>
             </tr>
           </tbody>
         </table>
       )}
-
       <p>يتم سداد 10% كمصاريف صيانة عند الاستلام.</p>
     </div>
   );
 };
 
 export default Zahraa;
+
+
